@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DÜSİBER // Oltalama Dedektifi 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@600;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --bg: #090b12;
+      --card-bg: rgba(17, 21, 37, 0.94);
+      --terminal-green: #00ff66;
+      --neon-cyan: #00e5ff;
+      --neon-purple: #c084fc;
+      --brand-purple: #8b5cf6;
+      --fake-red: #ff3366;
+      --real-green: #10b981;
+      --border-color: rgba(139, 92, 246, 0.35);
+      --text-muted: #94a3b8;
+      --text-main: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 14px 40px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Logo Stili */
+    .club-logo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--neon-purple);
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.65), 0 0 10px rgba(0, 255, 102, 0.4);
+      margin-bottom: 12px;
+      animation: pulse-glow 3s infinite alternate;
+    }
+
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+      100% { box-shadow: 0 0 30px rgba(192, 132, 252, 0.9), 0 0 15px rgba(0, 255, 102, 0.6); }
+    }
+
+    .badge-top {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: var(--neon-purple);
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 8px;
+    }
+
+    /* 1. KARŞILAMA EKRANI (WELCOME SCREEN) */
+    #welcome-screen {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 18px;
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+      margin-top: 10px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+      margin-bottom: 4px;
+    }
+
+    h1 span {
+      color: var(--fake-red);
+    }
+
+    .welcome-desc {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin: 14px 0 20px;
+    }
+
+    .input-box {
+      width: 100%;
+      background: #030509;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+      margin-bottom: 14px;
+    }
+
+    .input-box:focus {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 14px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-start {
+      width: 100%;
+      background: linear-gradient(135deg, #e11d48, #8b5cf6);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(225, 29, 72, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-start:active {
+      transform: scale(0.98);
+    }
+
+    /* 2. OYUN ALANI */
+    #game-container {
+      display: none;
+      width: 100%;
+    }
+
+    .header-mini {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .header-mini-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--neon-purple);
+      margin-bottom: 4px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .score-badge { color: var(--terminal-green); font-weight: 700; }
+    .question-count { color: var(--neon-cyan); }
+
+    .message-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
+      margin-bottom: 16px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 14px;
+    }
+
+    .app-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: #1e293b;
+    }
+
+    .app-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sender-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .sender-detail {
+      font-size: 11px;
+      color: var(--neon-cyan);
+      font-family: 'Fira Code', monospace;
+      word-break: break-all;
+    }
+
+    .message-body {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      margin-bottom: 14px;
+    }
+
+    .message-body a, .message-body .fake-link {
+      color: #38bdf8;
+      text-decoration: underline;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .btn-action {
+      border: none;
+      border-radius: 12px;
+      padding: 16px 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      color: #ffffff;
+    }
+
+    .btn-real {
+      background: linear-gradient(135deg, #059669, #10b981);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-fake {
+      background: linear-gradient(135deg, #e11d48, #ff3366);
+      box-shadow: 0 4px 16px rgba(255, 51, 102, 0.35);
+    }
+
+    .btn-action:active { transform: scale(0.97); }
+    .btn-action span { font-size: 18px; }
+
+    .analysis-box {
+      display: none;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .analysis-box.correct {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid var(--real-green);
+      color: #a7f3d0;
+    }
+
+    .analysis-box.wrong {
+      background: rgba(255, 51, 102, 0.12);
+      border: 1px solid var(--fake-red);
+      color: #fecdd3;
+    }
+
+    .analysis-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .analysis-text { font-size: 12px; line-height: 1.5; }
+
+    .btn-next {
+      display: none;
+      width: 100%;
+      background: var(--neon-cyan);
+      color: #041017;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 229, 255, 0.3);
+      margin-bottom: 16px;
+    }
+
+    /* 3. FİNAL ZAFER / SONUÇ EKRANI */
+    #final-screen {
+      display: none;
+      background: var(--card-bg);
+      border: 2px solid var(--neon-purple);
+      border-radius: 18px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4);
+    }
+
+    .score-circle {
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      border: 4px solid var(--terminal-green);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      background: rgba(0, 255, 102, 0.08);
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.4);
+    }
+
+    .score-big {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .score-sub {
+      font-size: 11px;
+      color: var(--terminal-green);
+      font-family: 'Fira Code', monospace;
+      margin-top: 4px;
+    }
+
+    .id-card {
+      background: #04050a;
+      border: 1px dashed var(--neon-purple);
+      border-radius: 10px;
+      padding: 14px;
+      margin: 16px 0;
+      text-align: left;
+    }
+
+    .id-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .id-row span:first-child { color: var(--text-muted); }
+    .id-row span:last-child { color: var(--terminal-green); font-weight: 700; }
+
+    .rank-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 17px;
+      color: var(--neon-cyan);
+      margin-bottom: 6px;
+    }
+
+    .rank-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .reward-box {
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px dashed var(--neon-purple);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .reward-box b { color: var(--terminal-green); }
+
+    .btn-insta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      text-decoration: none;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #ffffff;
+      padding: 15px;
+      border-radius: 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 4px 20px rgba(220, 39, 67, 0.4);
+      margin-bottom: 10px;
+    }
+
+    .btn-retry {
+      background: transparent;
+      border: 1px solid var(--text-muted);
+      color: var(--text-muted);
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Fira Code', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    
+    <!-- ==================== 1. KARŞILAMA EKRANI (WELCOME) ==================== -->
+    <div id="welcome-screen">
+      <img src="logo.jpg" alt="DÜSİBER Logo" class="club-logo" onerror="this.style.display='none'">
+      <div class="badge-top">DÜSİBER // SİBER FARKINDALIK 2026</div>
+      <h1>OLTALAMA <span>AVCISI</span></h1>
+      <p class="welcome-desc">
+        Günde binlerce kişi sahte SMS ve e-postalarla dolandırılıyor. Sen bu tuzakları ayırt edip sistemi koruyabilir misin?
+      </p>
+
+      <input type="text" class="input-box" id="player-name" placeholder="Adın ve Soyadın..." autocomplete="off">
+      
+      <button class="btn-start" onclick="startGame()">
+        DEDEKTİF TESTİNİ BAŞLAT &gt;
+      </button>
+      <div id="welcome-error" style="color: var(--fake-red); font-size: 12px; margin-top: 10px;"></div>
+    </div>
+
+    <!-- ==================== 2. OYUN ALANI ==================== -->
+    <div id="game-container">
+      <div class="header-mini">
+        <img src="logo.jpg" alt="DÜSİBER Logo" class="header-mini-logo" onerror="this.style.display='none'">
+        <div style="font-size: 11px; color: var(--neon-purple); font-weight: 700;">DÜSİBER // OLTALAMA AVCISI</div>
+      </div>
+
+      <div class="status-bar" id="status-bar">
+        <span class="question-count" id="q-count">SORU 1 / 10</span>
+        <span class="score-badge" id="score-text">SKOR: 0</span>
+      </div>
+
+      <div class="message-card">
+        <div class="app-header">
+          <div class="app-icon" id="app-icon">💬</div>
+          <div class="app-meta">
+            <span class="sender-name" id="sender-name">Yükleniyor...</span>
+            <span class="sender-detail" id="sender-detail">...</span>
+          </div>
+        </div>
+
+        <div class="message-body" id="message-body">
+          Yükleniyor...
+        </div>
+      </div>
+
+      <!-- Karar Butonları -->
+      <div class="btn-group" id="btn-group">
+        <button class="btn-action btn-real" onclick="makeChoice(true)">
+          <span>🛡️</span>
+          GÜVENLİ (GERÇEK)
+        </button>
+        <button class="btn-action btn-fake" onclick="makeChoice(false)">
+          <span>🎣</span>
+          OLTALAMA (SAHTE)
+        </button>
+      </div>
+
+      <!-- Analiz & Açıklama Kutusu -->
+      <div class="analysis-box" id="analysis-box">
+        <div class="analysis-title" id="analysis-title"></div>
+        <div class="analysis-text" id="analysis-text"></div>
+      </div>
+
+      <!-- Sonraki Soru Butonu -->
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">
+        SONRAKİ SENARYO &gt;
+      </button>
+    </div>
+
+    <!-- ==================== 3. FİNAL SONUÇ EKRANI ==================== -->
+    <div id="final-screen">
+      <img src="logo.jpg" alt="DÜSİBER Logo" class="club-logo" style="width: 80px; height: 80px; margin: 0 auto 10px; display: block;" onerror="this.style.display='none'">
+      
+      <div class="score-circle">
+        <span class="score-big" id="final-score">0</span>
+        <span class="score-sub">10 ÜZERİNDEN</span>
+      </div>
+
+      <h2 class="rank-title" id="rank-title">UNVAN</h2>
+      <p class="rank-desc" id="rank-desc">Analiz yükleniyor...</p>
+
+      <div class="id-card">
+        <div class="id-row">
+          <span>DEDEKTİF:</span>
+          <span id="final-player-name" style="color: #ffffff; text-transform: uppercase;">-</span>
+        </div>
+        <div class="id-row">
+          <span>BAŞARI ORANI:</span>
+          <span id="final-percent" style="color: var(--neon-cyan);">%0</span>
+        </div>
+        <div class="id-row">
+          <span>GÜVENLİK ANALİZİ:</span>
+          <span id="final-safety-status">TAMAMLANDI</span>
+        </div>
+      </div>
+
+      <div class="reward-box">
+        🎁 <b>STANT ÖDÜLÜ:</b><br>
+        Bu ekranı <b>DÜSİBER Standındaki Görevliye Göster</b> ve siber güvenlik stickerlarını kap!
+      </div>
+
+      <a href="https://www.instagram.com/du_siber/" target="_blank" class="btn-insta">
+        📸 INSTAGRAM'DA BİZİ TAKİP ET (@du_siber)
+      </a>
+
+      <button class="btn-retry" onclick="restartGame()">
+        🔄 Testi Yeniden Başlat
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    let playerName = "";
+
+    function startGame() {
+      const nameInput = document.getElementById('player-name').value.trim();
+      const err = document.getElementById('welcome-error');
+      if (!nameInput) {
+        err.innerText = "Lütfen adını ve soyadını yaz!";
+        return;
+      }
+      playerName = nameInput;
+      document.getElementById('welcome-screen').style.display = 'none';
+      document.getElementById('game-container').style.display = 'block';
+      loadQuestion();
+    }
+
+    const scenarios = [
+      {
+        icon: "💬",
+        sender: "GSB-KYK",
+        detail: "SMS Bildirimi",
+        text: "Sayın öğrencimiz, 2026 yılı ek teknoloji destek bursunuz onaylanmıştır. Hemen <b>kyk-genc-destek.net</b> adresinden IBAN bilgilerinizi güncelleyiniz.",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> Resmi devlet kurumları asla <code>.net</code> uzantısı kullanmaz, sadece <code>.gov.tr</code> kullanır! Bilgilerini çalmak için sahte bir site açmışlar."
+      },
+      {
+        icon: "🏛️",
+        sender: "e-Devlet Kapısı",
+        detail: "SMS Bildirimi (160)",
+        text: "Sn. Kullanıcı, e-Devlet Kapısı şifreniz başarıyla değiştirilmiştir. Bu işlem bilginiz dahilinde değilse www.turkiye.gov.tr adresinden destek alınız.",
+        isReal: true,
+        reason: "✔ <b>GÜVENLİ!</b> Mesajda hiçbir şüpheli bağlantı (link) yok, doğrudan resmi alan adı belirtilmiş ve sadece işlem bilgilendirmesi yapılmış."
+      },
+      {
+        icon: "📸",
+        sender: "Instagram Destek",
+        detail: "Direkt Mesaj (DM)",
+        text: "Hesabınız bir telif hakkı ihlali nedeniyle 24 saat içinde kapatılacaktır. İtiraz etmek için formu doldurun: <span class='fake-link'>instagram-telif-destek.com</span>",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> Instagram/Meta ASLA kullanıcılara DM yoluyla telif uyarısı atmaz! Bütün resmi uyarılar Ayarlar > Bildirimler menüsünde yer alır."
+      },
+      {
+        icon: "📦",
+        sender: "PTT Kargo",
+        detail: "SMS Bildirimi",
+        text: "Paketiniz adres eksikliği sebebiyle şubeye geri dönmüştür. 4.80 TL güncelleme harcı ödeyerek teslim almak için: <span class='fake-link'>ptt-kargo-teslimat.site</span>",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> Klasik kargo tuzağı! Kart bilgilerini çalmak için 4.80 TL gibi küçük bir meblağ uydururlar ve sahte (.site) linkine yönlendirirler."
+      },
+      {
+        icon: "🛡️",
+        sender: "Google Güvenlik",
+        detail: "no-reply@accounts.google.com",
+        text: "Yeni bir cihazdan (Mac OS) hesabınıza giriş yapıldı. Bu siz değilseniz hemen Google Hesabınızdaki 'Cihazları Yönet' bölümünü inceleyin.",
+        isReal: true,
+        reason: "✔ <b>GÜVENLİ!</b> Gönderen adresi resmi <code>google.com</code> uzantılıdır. Acil panik dili kullanmaz ve şüpheli harici bir linke tıklatmaz."
+      },
+      {
+        icon: "🎓",
+        sender: "Düzce Üniversitesi Öğrenci İşleri",
+        detail: "ogrenci.isleri@duzce-universitesi-portal.com",
+        text: "Ders kayıt sisteminizde güvenlik açığı tespit edilmiştir. Şifrenizi hemen aşağıdaki portaldan yenileyiniz: <span class='fake-link'>duzce-obs-sifre.com</span>",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> Üniversitemizin resmi web uzantısı <code>duzce.edu.tr</code>'dir. 'duzce-universitesi-portal.com' sahte bir alan adıdır!"
+      },
+      {
+        icon: "🏦",
+        sender: "Ziraat Bankası",
+        detail: "SMS Bildirimi",
+        text: "Hesabınızdan 1.250 TL tutarında FAST transferi gerçekleşmiştir. Bilginiz dahilinde değilse lütfen 0850 220 00 00 numaralı çağrı merkezimizi arayınız.",
+        isReal: true,
+        reason: "✔ <b>GÜVENLİ!</b> SMS'te hiçbir tıklanabilir bağlantı yok. Doğrudan bankanın resmi 0850'li müşteri hizmetleri numarası verilmiş."
+      },
+      {
+        icon: "💬",
+        sender: "WhatsApp Web",
+        detail: "SMS Bildirimi",
+        text: "WhatsApp hesabınız yeni bir telefonda başlatılıyor. Bunu siz yapmadıysanız doğrulamayı iptal etmek için tıklayın: <span class='fake-link'>whatsapp-guvenlik-dogrula.online</span>",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> WhatsApp asla web bağlantısı üzerinden SMS ile kod onaylatmaz veya iptal linki göndermez!"
+      },
+      {
+        icon: "🎬",
+        sender: "Netflix",
+        detail: "fatura@netflx-support.com",
+        text: "Aylık abonelik ödemeniz başarısız oldu. Hesabınızın askıya alınmaması için kartınızı güncelleyin: <span class='fake-link'>netflx-fatura-odeme.com</span>",
+        isReal: false,
+        reason: "🚨 <b>OLTALAMA!</b> Harf tuzağı (Typosquatting)! <code>netflix</code> yerine harfi eksik <code>netflx</code> yazmışlar."
+      },
+      {
+        icon: "🍔",
+        sender: "Yemeksepeti",
+        detail: "SMS Bildirimi",
+        text: "Siparişiniz yola çıktı! Kuryeniz kapıya yaklaştığında sizi arayacaktır. Afiyet olsun!",
+        isReal: true,
+        reason: "✔ <b>GÜVENLİ!</b> Standart teslimat bilgilendirmesidir. Şüpheli bir link veya kart bilgisi talep etmez."
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+
+    function loadQuestion() {
+      const q = scenarios[currentQ];
+      document.getElementById('q-count').innerText = `SORU ${currentQ + 1} / ${scenarios.length}`;
+      document.getElementById('score-text').innerText = `SKOR: ${score}`;
+      
+      document.getElementById('app-icon').innerText = q.icon;
+      document.getElementById('sender-name').innerText = q.sender;
+      document.getElementById('sender-detail').innerText = q.detail;
+      document.getElementById('message-body').innerHTML = q.text;
+
+      document.getElementById('analysis-box').style.display = 'none';
+      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('btn-group').style.display = 'grid';
+    }
+
+    function makeChoice(userSaidReal) {
+      const q = scenarios[currentQ];
+      const isCorrect = (userSaidReal === q.isReal);
+      
+      const analysisBox = document.getElementById('analysis-box');
+      const analysisTitle = document.getElementById('analysis-title');
+      const analysisText = document.getElementById('analysis-text');
+
+      document.getElementById('btn-group').style.display = 'none';
+
+      if (isCorrect) {
+        score++;
+        document.getElementById('score-text').innerText = `SKOR: ${score}`;
+        analysisBox.className = 'analysis-box correct';
+        analysisTitle.innerHTML = '🎯 <b>DOĞRU TEŞHİS!</b>';
+        if (typeof confetti === 'function') {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+        }
+      } else {
+        analysisBox.className = 'analysis-box wrong';
+        analysisTitle.innerHTML = '💀 <b>TUZAK! YANILDIN!</b>';
+      }
+
+      analysisText.innerHTML = q.reason;
+      analysisBox.style.display = 'block';
+      document.getElementById('btn-next').style.display = 'block';
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < scenarios.length) {
+        loadQuestion();
+      } else {
+        showFinal();
+      }
+    }
+
+    function showFinal() {
+      document.getElementById('game-container').style.display = 'none';
+      document.getElementById('final-screen').style.display = 'block';
+
+      document.getElementById('final-score').innerText = `${score}`;
+      document.getElementById('final-player-name').innerText = playerName;
+      document.getElementById('final-percent').innerText = `%${score * 10}`;
+
+      const title = document.getElementById('rank-title');
+      const desc = document.getElementById('rank-desc');
+
+      if (score >= 9) {
+        title.innerText = "🛡️ SİBER DEDEKTİF (HACKLENEMEZ)";
+        desc.innerText = "İnanılmaz bir dikkat! Oltalama tuzaklarının hiçbirine düşmedin. Tam bir DÜSİBER siber güvenlikçisisin!";
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+      } else if (score >= 7) {
+        title.innerText = "⚠️ DİKKATLİ KULLANICI";
+        desc.innerText = "Genel olarak çok iyisin ama 1-2 kurnaz tuzak seni yakaladı. Biraz daha pratikle kusursuz olacaksın!";
+      } else if (score >= 5) {
+        title.innerText = "🚨 RİSK ALTINDASIN";
+        desc.innerText = "Günlük hayatta oltalanma ihtimalin yüksek. Şüpheli linklere ve sahte alan adlarına dikkat etmelisin!";
+      } else {
+        title.innerText = "💀 KOLAY LOKMA";
+        desc.innerText = "Hemen DÜSİBER standına gel ve üye ol! Siber saldırganlar senin için pusuya yatmış durumda!";
+      }
+    }
+
+    function restartGame() {
+      currentQ = 0;
+      score = 0;
+      document.getElementById('final-screen').style.display = 'none';
+      document.getElementById('game-container').style.display = 'block';
+      loadQuestion();
+    }
+  </script>
+</body>
+</html>
