@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DÜSİBER // Mini Stant CTF Görevi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --bg: #070d0b;
+      --card-bg: rgba(13, 23, 20, 0.88);
+      --terminal-green: #00ff66;
+      --neon-cyan: #00e5ff;
+      --accent-red: #ff3366;
+      --border-color: rgba(0, 255, 102, 0.28);
+      --text-muted: #84a59d;
+      --text-main: #e2f1ec;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 14px 40px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Cyber Matrix Canvas Arka Planı */
+    #matrix-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.16;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Üst Başlık */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 8px;
+    }
+
+    .badge-top {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(0, 255, 102, 0.6);
+      margin-bottom: 4px;
+    }
+
+    h1 span {
+      color: var(--terminal-green);
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* İlerleme Çubuğu */
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background: rgba(0, 255, 102, 0.2);
+      border-color: var(--terminal-green);
+      color: var(--terminal-green);
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+    }
+
+    .dot.completed {
+      background: var(--terminal-green);
+      color: #000;
+      border-color: var(--terminal-green);
+    }
+
+    .progress-status {
+      font-size: 12px;
+      color: var(--neon-cyan);
+      font-weight: 600;
+    }
+
+    /* Kart Yapısı */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--neon-cyan);
+      margin-bottom: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .terminal-box {
+      background: #040807;
+      border: 1px solid rgba(0, 255, 102, 0.2);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .terminal-box::before {
+      content: '● ● ●';
+      display: block;
+      color: #445851;
+      font-size: 10px;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .mission-text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #c9ded7;
+      margin-bottom: 10px;
+    }
+
+    .cipher-box {
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px dashed var(--neon-cyan);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #ffffff;
+      word-break: break-all;
+      text-align: center;
+      font-weight: 600;
+      user-select: all;
+    }
+
+    /* İpucu ve Eğitim Kutusu */
+    .edu-hint-box {
+      background: rgba(255, 187, 0, 0.07);
+      border-left: 3px solid #ffbb00;
+      padding: 10px 12px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #eeddb0;
+    }
+
+    .edu-hint-box b {
+      color: #ffbb00;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    /* Form Girişi */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-box {
+      width: 100%;
+      background: #030605;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 13px 14px;
+      color: #ffffff;
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-box:focus {
+      border-color: var(--terminal-green);
+      box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--terminal-green);
+      color: #05140d;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 255, 102, 0.3);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--neon-cyan);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Fira Code', monospace;
+      margin-top: 6px;
+    }
+
+    .feedback {
+      font-size: 12px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .feedback.error {
+      color: var(--accent-red);
+    }
+
+    .feedback.success {
+      color: var(--terminal-green);
+    }
+
+    /* Final Zafer Ekranı */
+    #victory-card {
+      display: none;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(0, 30, 20, 0.95), rgba(7, 13, 11, 0.98));
+      border: 2px solid var(--terminal-green);
+      box-shadow: 0 0 30px rgba(0, 255, 102, 0.35);
+    }
+
+    .badge-icon {
+      font-size: 50px;
+      margin-bottom: 10px;
+      display: inline-block;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .id-card {
+      background: #020504;
+      border: 1px dashed var(--neon-cyan);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 18px 0;
+      text-align: left;
+    }
+
+    .id-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .id-row span:first-child {
+      color: var(--text-muted);
+    }
+
+    .id-row span:last-child {
+      color: var(--terminal-green);
+      font-weight: 700;
+    }
+
+    .claim-box {
+      background: rgba(0, 255, 102, 0.1);
+      border: 1px solid var(--terminal-green);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #ffffff;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .claim-box b {
+      color: var(--terminal-green);
+    }
+
+    .btn-register {
+      display: block;
+      width: 100%;
+      text-decoration: none;
+      background: var(--neon-cyan);
+      color: #011b22;
+      padding: 14px;
+      border-radius: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    /* Modal / Simülatör (Görev 2 için) */
+    .code-viewer {
+      display: none;
+      background: #010302;
+      border: 1px solid #33443d;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 11px;
+      color: #92b8a7;
+      text-align: left;
+      margin-top: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Matrix Efekti Arka Plan -->
+  <canvas id="matrix-bg"></canvas>
+
+  <div class="container">
+    
+    <!-- Başlık -->
+    <header class="header">
+      <div class="badge-top">Düzce Üniversitesi // Siber Güvenlik Topluluğu</div>
+      <h1>DÜSİBER <span>HACK QUEST</span></h1>
+      <p class="subtitle">Stant Görevini Tamamla, Ödülünü Kap!</p>
+    </header>
+
+    <!-- İlerleme Çubuğu -->
+    <div class="progress-bar-container">
+      <div class="progress-dots">
+        <div class="dot active" id="dot-1">1</div>
+        <div class="dot" id="dot-2">2</div>
+        <div class="dot" id="dot-3">3</div>
+        <div class="dot" id="dot-4">4</div>
+      </div>
+      <div class="progress-status" id="progress-text">GÖREV 1/4</div>
+    </div>
+
+    <!-- ==================== GÖREV 1: BASE64 ==================== -->
+    <section class="card" id="quest-1">
+      <div class="card-title">
+        <span>⚡ GÖREV 1: Kriptografi // Base64 Gizemi</span>
+      </div>
+
+      <div class="terminal-box">
+        <p class="mission-text">
+          DÜSİBER kampüs ağından şifreli bir iletişim paketi yakalandı. Ağdaki mesaj şifrelenmiş görünüyor.
+        </p>
+        <div class="cipher-box" id="cipher-1">RFVTSUJFUntob3NnZWxkaW5fYWphbn0=</div>
+      </div>
+
+      <div class="edu-hint-box">
+        <b>💡 Siber İpucu (Base64 Nedir?):</b>
+        Base64, ikili (binary) verileri metne dönüştüren çok yaygın bir kodlama yöntemidir. Genellikle sonunda <code>=</code> veya <code>==</code> karakterleri olur.<br>
+        <b>Nasıl Çözerim?</b> Google'a <code>Base64 decode</code> yaz, yukarıdaki metni kopyalayıp çözücüye yapıştır ve gizli metni bul!
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="input-box" id="ans-1" placeholder="Çözülen metni gir (Örn: DUSIBER{...})" autocomplete="off">
+        <button class="btn-submit" onclick="checkQuest1()">
+          ONAYLA &gt;
+        </button>
+        <div class="feedback" id="fb-1"></div>
+      </div>
+    </section>
+
+    <!-- ==================== GÖREV 2: SEZAR ŞİFRESİ ==================== -->
+    <section class="card" id="quest-2" style="display: none;">
+      <div class="card-title">
+        <span>🏛️ GÖREV 2: Antik Kriptoloji // Sezar Şifresi</span>
+      </div>
+
+      <div class="terminal-box">
+        <p class="mission-text">
+          Antik Roma'dan günümüze gelen en eski gizli haberleşme yöntemi! Harfler alfabede <b>3 adım ileri</b> kaydırılarak şifrelendi:
+        </p>
+        <div class="cipher-box" id="cipher-2">GXVLEHU</div>
+      </div>
+
+      <div class="edu-hint-box">
+        <b>💡 Siber İpucu (Caesar Cipher Nedir?):</b>
+        Julius Caesar'ın komutanlarına gizli emir verirken kullandığı yöntemdir. Her harf alfabede belirli bir sayı (Shift) kadar kaydırılır.<br>
+        <b>Nasıl Çözerim?</b> Google'a <code>Caesar cipher decoder</code> yaz, metni gir ve harfleri 3 adım geriye alarak kulübümüzün adını ortaya çıkar!
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="input-box" id="ans-2" placeholder="Orijinal kelimeyi gir..." autocomplete="off">
+        <button class="btn-submit" onclick="checkQuest2()">
+          ONAYLA &gt;
+        </button>
+        <div class="feedback" id="fb-2"></div>
+      </div>
+    </section>
+
+    <!-- ==================== GÖREV 3: KAYNAK KOD AVCISI ==================== -->
+    <section class="card" id="quest-3" style="display: none;">
+      <div class="card-title">
+        <span>🔍 GÖREV 3: Web Güvenliği // Kaynak Kod Analizi</span>
+      </div>
+
+      <div class="terminal-box">
+        <p class="mission-text">
+          Acemi bir web geliştiricisi, yönetici parolasını sayfa kodunun içinde gizli bir yorum satırında unuttu!
+        </p>
+        <button class="btn-secondary" onclick="toggleSourceViewer()">📄 Sayfa Kaynak Kodunu İncele</button>
+        
+        <div class="code-viewer" id="source-code-view">
+&lt;!-- SİSTEM GÜVENLİK PROTOKOLÜ v1.4 --&gt;
+&lt;div class="admin-panel"&gt;
+  &lt;h2&gt;Giriş Yapılamadı&lt;/h2&gt;
+  &lt;!-- TODO: Can, acil flag'i buradan kaldır unutma! --&gt;
+  &lt;!-- GİZLİ FLAG: DUSIBER{kodlarin_efendisi} --&gt;
+  &lt;p&gt;Yetkiniz bulunmamaktadır.&lt;/p&gt;
+&lt;/div&gt;</div>
+      </div>
+
+      <div class="edu-hint-box">
+        <b>💡 Siber İpucu (Kaynak Kod Güvenliği):</b>
+        Geliştiriciler bazen web sitelerinin HTML kodlarında test notları veya şifreler unuturlar. Beyaz şapkalı hackerlar güvenlik açıklarını bulmak için ilk olarak kaynak kodları inceler.<br>
+        <b>Nasıl Çözerim?</b> Yukarıdaki "Kaynak Kodunu İncele" butonuna tıkla ve gizlenmiş <code>DUSIBER{...}</code> anahtarını bul!
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="input-box" id="ans-3" placeholder="Bulduğun flag'i gir..." autocomplete="off">
+        <button class="btn-submit" onclick="checkQuest3()">
+          ONAYLA &gt;
+        </button>
+        <div class="feedback" id="fb-3"></div>
+      </div>
+    </section>
+
+    <!-- ==================== GÖREV 4: HASH KIRMA (MD5) ==================== -->
+    <section class="card" id="quest-4" style="display: none;">
+      <div class="card-title">
+        <span>🔓 GÖREV 4: Veri Tabanı Sızıntısı // Hash Kırma</span>
+      </div>
+
+      <div class="terminal-box">
+        <p class="mission-text">
+          Bir siber saldırıda ele geçirilen veritabanında parolalar MD5 algoritmasıyla özetlenmiş (hashlenmiş). Bir saldırgan bu şifreyi nasıl kırabilir?
+        </p>
+        <div class="cipher-box" id="cipher-4">d6a6bc0db10694a2d90e3a69648f3a03</div>
+      </div>
+
+      <div class="edu-hint-box">
+        <b>💡 Siber İpucu (Hash ve Rainbow Table):</b>
+        Hash fonksiyonları tek yönlüdür; doğrudan tersine çevrilemez. Ancak hackerlar devasa kelime listeleri (Rainbow Table) kullanarak hash'leri karşılaştırır.<br>
+        <b>Nasıl Çözerim?</b> Google'a <code>MD5 decrypt</code> veya <code>CrackStation</code> yaz, yukarıdaki karmaşık kodu yapıştır ve bu hash'in arkasındaki İngilizce popüler kelimeyi bul!
+      </div>
+
+      <div class="input-group">
+        <input type="text" class="input-box" id="ans-4" placeholder="Kırılan kelimeyi gir..." autocomplete="off">
+        <button class="btn-submit" onclick="checkQuest4()">
+          GÖREVİ BİTİR &gt;
+        </button>
+        <div class="feedback" id="fb-4"></div>
+      </div>
+    </section>
+
+    <!-- ==================== FINAL ZAFER EKRANI ==================== -->
+    <section class="card" id="victory-card">
+      <div class="badge-icon">🛡️</div>
+      <h2 style="font-family: 'Orbitron'; color: var(--terminal-green); font-size: 20px; margin-bottom: 6px;">
+        GÖREV TAMAMLANDI!
+      </h2>
+      <p style="font-size: 13px; color: #b7d6cb;">
+        Tebrikler! DÜSİBER Ajanlık Testini Başarıyla Geçtin.
+      </p>
+
+      <div class="id-card">
+        <div class="id-row">
+          <span>OPERASYON:</span>
+          <span>DÜSİBER STANT CTF 2024</span>
+        </div>
+        <div class="id-row">
+          <span>DURUM:</span>
+          <span>YETKİLİ AJAN (VERIFIED)</span>
+        </div>
+        <div class="id-row">
+          <span>GÜVENLİK DÜZEYİ:</span>
+          <span style="color: var(--neon-cyan);">SEVİYE 1 - BEYAZ ŞAPKALI</span>
+        </div>
+      </div>
+
+      <div class="claim-box">
+        🎁 <b>ÖDÜLÜNÜ AL:</b><br>
+        Bu ekranı <b>DÜSİBER Standındaki Görevliye Göster</b> ve özel hacker stickerlarını / stant hediyeni teslim al!
+      </div>
+
+      <!-- Kullanıcı kendi Google Forms linkini buraya koyabilir -->
+      <a href="https://forms.gle/" target="_blank" class="btn-register">
+        👉 DÜSİBER AİLESİNE KATIL (ÜYELİK FORMU)
+      </a>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+        Instagram: @duzce_siber // Düzce Üniversitesi
+      </p>
+    </section>
+
+  </div>
+
+  <script>
+    // Matrix Arka Plan Efekti
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const letters = '01DUSIBER101001HACKSECURITY';
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(7, 13, 11, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff66';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 45);
+
+    // Konfeti Kutlaması
+    function fireConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00ff66', '#00e5ff', '#ffffff']
+        });
+      }
+    }
+
+    // Görev Kontrolleri
+    function checkQuest1() {
+      const val = document.getElementById('ans-1').value.trim();
+      const fb = document.getElementById('fb-1');
+      if (val === 'DUSIBER{hosgeldin_ajan}') {
+        fb.className = 'feedback success';
+        fb.innerText = '✔ Doğru! Base64 deşifre edildi.';
+        fireConfetti();
+        setTimeout(() => {
+          document.getElementById('quest-1').style.display = 'none';
+          document.getElementById('quest-2').style.display = 'block';
+          document.getElementById('dot-1').className = 'dot completed';
+          document.getElementById('dot-2').className = 'dot active';
+          document.getElementById('progress-text').innerText = 'GÖREV 2/4';
+        }, 900);
+      } else {
+        fb.className = 'feedback error';
+        fb.innerText = '✖ Hatalı flag! İpucunu oku ve tekrar dene.';
+      }
+    }
+
+    function checkQuest2() {
+      const val = document.getElementById('ans-2').value.trim().toUpperCase();
+      const fb = document.getElementById('fb-2');
+      if (val === 'DUSIBER') {
+        fb.className = 'feedback success';
+        fb.innerText = '✔ Harika! Sezar şifresi çözüldü.';
+        fireConfetti();
+        setTimeout(() => {
+          document.getElementById('quest-2').style.display = 'none';
+          document.getElementById('quest-3').style.display = 'block';
+          document.getElementById('dot-2').className = 'dot completed';
+          document.getElementById('dot-3').className = 'dot active';
+          document.getElementById('progress-text').innerText = 'GÖREV 3/4';
+        }, 900);
+      } else {
+        fb.className = 'feedback error';
+        fb.innerText = '✖ Yanlış cevap! Harfleri 3 adım geriye almayı unutma.';
+      }
+    }
+
+    function toggleSourceViewer() {
+      const el = document.getElementById('source-code-view');
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function checkQuest3() {
+      const val = document.getElementById('ans-3').value.trim();
+      const fb = document.getElementById('fb-3');
+      if (val === 'DUSIBER{kodlarin_efendisi}') {
+        fb.className = 'feedback success';
+        fb.innerText = '✔ Süper! Gizli yorum satırı tespit edildi.';
+        fireConfetti();
+        setTimeout(() => {
+          document.getElementById('quest-3').style.display = 'none';
+          document.getElementById('quest-4').style.display = 'block';
+          document.getElementById('dot-3').className = 'dot completed';
+          document.getElementById('dot-4').className = 'dot active';
+          document.getElementById('progress-text').innerText = 'GÖREV 4/4';
+        }, 900);
+      } else {
+        fb.className = 'feedback error';
+        fb.innerText = '✖ Kodun içindeki gizli flagi tam olarak yazmalısın.';
+      }
+    }
+
+    function checkQuest4() {
+      const val = document.getElementById('ans-4').value.trim().toLowerCase();
+      const fb = document.getElementById('fb-4');
+      if (val === 'hacker') {
+        fb.className = 'feedback success';
+        fb.innerText = '✔ Tebrikler! Hash başarıyla kırıldı!';
+        fireConfetti();
+        setTimeout(() => {
+          document.getElementById('quest-4').style.display = 'none';
+          document.querySelector('.progress-bar-container').style.display = 'none';
+          document.getElementById('victory-card').style.display = 'block';
+          // Büyük zafer konfetisi
+          confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+        }, 900);
+      } else {
+        fb.className = 'feedback error';
+        fb.innerText = '✖ Yanlış kelime! CrackStation veya MD5 Decrypt sitelerinde arat.';
+      }
+    }
+  </script>
+</body>
+</html>
